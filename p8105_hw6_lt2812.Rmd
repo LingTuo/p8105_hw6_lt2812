@@ -156,8 +156,8 @@ anova(model_all) %>%
 Then, create a correlation matrix with numeric variables. The plot shows that parity seems to have weaker correlation with bwt than others, thus excluded for baseline variables. What's more, there are error with 'wtgain' when generating regression model, which maybe caused by collinearity ('delwt' = 'wtgain' + 'ppwt').
 
 ```{r}
-cor(baby_df[,c(3,4,5,6,8,11,14,15,17)]) %>% 
-  corrplot(method = "circle", type = "upper", diag=FALSE)
+cor(baby_df[,c(3, 4, 5, 6, 8, 11, 14, 15, 17)]) %>% 
+  corrplot(method = "circle", type = "upper", diag = FALSE)
 
 model_bwt = lm(bwt ~ babysex + bhead + blength + delwt + fincome + gaweeks + mheight + mrace + ppbmi + smoken, data = baby_df)
 
@@ -202,7 +202,7 @@ model_inter %>%
 
 ```{r}
 cv_df =
-  crossv_mc(baby_df, 100) %>% 
+  crossv_mc(baby_df, 1000) %>% 
   mutate(
     train = map(train, as_tibble),
     test = map(test, as_tibble))
@@ -210,14 +210,16 @@ cv_df =
 cv_df = 
   cv_df %>% 
   mutate(
-    bwt_mod  = map(.x = train, ~lm(bwt ~ babysex + bhead + blength + delwt +fincome + gaweeks + mheight + mrace + ppbmi + smoken, data = baby_df)),
-    len_ga_mod  = map(.x = train, ~lm(bwt ~ blength + gaweeks, data = baby_df)),
-    inter_mod  = map(.x = train, ~lm(bwt ~ bhead * blength * babysex, data = baby_df))) %>% 
+    bwt_mod = map(.x = train, ~lm(bwt ~ babysex + bhead + blength + delwt + fincome + gaweeks + mheight + mrace + ppbmi + smoken, data = baby_df)),
+    len_ga_mod = map(.x = train, ~lm(bwt ~ blength + gaweeks, data = baby_df)),
+    inter_mod = map(.x = train, ~lm(bwt ~ bhead * blength * babysex, data = baby_df))) %>% 
   mutate(
     rmse_bwt = map2_dbl(bwt_mod, .y = test, ~rmse(model = .x, data = .y)),
     rmse_len_ga = map2_dbl(len_ga_mod, .y = test, ~rmse(model = .x, data = .y)),
     rmse_inter = map2_dbl(inter_mod, .y = test, ~rmse(model = .x, data = .y)))
 ```
+
+Make a plot of rmse of 3 models.
 
 ```{r}
 cv_df %>% 
@@ -236,6 +238,22 @@ cv_df %>%
 
 In this plot, we can see that model_bwt that involved multiple variables has the lowest rmse and model_len_ga which only contains two main predictors has the highest rmse. The prediction error of model_inter is slightly higher than model_bwt since it manage interactions between 3 main variables. In short, model_bwt fitted better than the other two.
 
+## Problem 3
 
+First, load the dataset.
+
+```{r include = FALSE}
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2017-01-01",
+    date_max = "2017-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
+```
 
 

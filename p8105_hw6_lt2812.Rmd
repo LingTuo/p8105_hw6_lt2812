@@ -12,7 +12,6 @@ This is my solution to HW6.
 ```{r setup, include = FALSE}
 library(tidyverse)
 library(modelr)
-library(p8105.datasets)
 library(corrplot) 
 
 knitr::opts_chunk$set(
@@ -34,7 +33,7 @@ scale_fill_discrete = scale_fill_viridis_d()
 
 ## Problem 1
 
-```{r}
+```{r message = FALSE, warning = FALSE}
 homicide_df = 
   read_csv("data/homicide-data.csv", na = c("", "NA", "Unknown")) %>% 
   mutate(

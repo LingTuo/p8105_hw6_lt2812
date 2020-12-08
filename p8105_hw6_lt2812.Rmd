@@ -258,7 +258,7 @@ weather_df =
 
 Generate 5000 bootstrap samples and produce estimates of these r_squared and log_beta for each bootstrap sample. 
 
-```{r}
+```{r warning = FALSE, message = FALSE}
 weather_boot_results =
   weather_df %>% 
   bootstrap(n = 5000) %>% 
@@ -279,5 +279,40 @@ weather_boot_results =
   mutate(
     log = log(beta_0 * beta_1)
     ) 
+```
+
+Plot the distribution of the estimates.
+
+```{r}
+weather_boot_results %>% 
+  ggplot(aes(x = r.squared)) +
+  geom_density() +
+  labs(
+    title = "r_squared distribution",
+    x = "r2 estimate"
+  )
+
+weather_boot_results %>% 
+  ggplot(aes(x = log)) +
+  geom_density() +
+  labs(
+    title = "log_(beta0*beta1) distribution",
+    x = "log_(beta0*beta1) estimate"
+  )
+```
+
+Both plots show that the distribution of estimates are similar with normal distribution, indicating the two estimators are followed normal distribution.
+
+
+Provide 95% CIs of r_square and log values by excluding the lower and upper 2.5% of the distribution of estimates across bootstrap samples.
+
+```{r}
+weather_boot_results %>% 
+  summarize(
+    estimate = c("r2", "log"),
+    ci_lower = c(quantile(r.squared, 0.025), quantile(log, 0.025)), 
+    ci_upper = c(quantile(r.squared, 0.975), quantile(log, 0.975))
+  ) %>% 
+  knitr::kable()
 ```
 
